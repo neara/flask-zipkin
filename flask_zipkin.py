@@ -82,10 +82,12 @@ class Zipkin(object):
         if not self._should_use_token(_app_ctx_stack.top._view_func):
             return
         headers = request.headers
+        parent_span_id = headers.get('X-B3-Parentspanid')
         trace_id = headers.get('X-B3-TraceId') or self._gen_random_id()
-        parent_span_id = headers.get('X-B3-ParentSpanId')
         is_sampled = str(headers.get('X-B3-Sampled') or '0') == '1'
+
         flags = headers.get('X-B3-Flags')
+        logging.error('FOOBARBAZ:{} {} {}'.format(request.headers, parent_span_id, trace_id))
 
         zipkin_attrs = zipkin.ZipkinAttrs(
             trace_id=trace_id,
