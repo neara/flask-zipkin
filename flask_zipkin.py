@@ -106,7 +106,14 @@ class Zipkin(object):
             zipkin_attrs=zipkin_attrs
         )
         g._zipkin_span = span
-        g._zipkin_span.start()
+        
+        try:
+            g._zipkin_span.start()
+        except Exception as e:
+            if self._transport_exception_handler:
+                self._transport_exception_handler(e)
+            else:
+                self.default_exception_handler(e)
 
     def exempt(self, view):
         view_location = '{0}.{1}'.format(view.__module__, view.__name__)
@@ -118,7 +125,14 @@ class Zipkin(object):
             return response
         if not hasattr(g, '_zipkin_span'):
             return response
-        g._zipkin_span.stop()
+        try:
+            g._zipkin_span.stop()
+        except Exception as e:
+            if self._transport_exception_handler:
+                self._transport_exception_handler(e)
+            else:
+                self.default_exception_handler(e)
+                
         return response
 
     def create_http_headers_for_new_span(self):
