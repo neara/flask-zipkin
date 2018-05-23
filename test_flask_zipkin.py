@@ -57,6 +57,26 @@ class FlaskZipkinTestCase(unittest.TestCase):
             assert flask.g._zipkin_span
             assert flask.g._zipkin_span.span_name == 'bp.bar.GET'
 
+    @mock.patch('py_zipkin.zipkin.zipkin_span.start', side_effect=Exception)
+    @mock.patch('py_zipkin.zipkin.create_endpoint')
+    def test_zipkin_fail_on_start(self, create_endpoint_mock, zipkin_start_mock):
+        with self.app.test_request_context('/foo'):
+            rv = self.app.test_client().get('/foo')
+            assert rv.status_code == 200
+            assert flask.g._zipkin_span
+            assert flask.g._zipkin_span.span_name == 'foo.GET'
+            assert zipkin_start_mock.called
+
+    @mock.patch('py_zipkin.zipkin.zipkin_span.stop', side_effect=Exception)
+    @mock.patch('py_zipkin.zipkin.create_endpoint')
+    def test_zipkin_fail_on_stop(self, create_endpoint_mock, zipkin_stop_mock):
+        with self.app.test_request_context('/foo'):
+            rv = self.app.test_client().get('/foo')
+            assert rv.status_code == 200
+            assert flask.g._zipkin_span
+            assert flask.g._zipkin_span.span_name == 'foo.GET'
+            assert zipkin_stop_mock.called
+
 
 def suite():
     suite = unittest.TestSuite()
